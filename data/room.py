@@ -22,3 +22,4 @@ class Rooms(SqlAlchemyBase, SerializerMixin):
     is_turn_ended = sqlalchemy.Column(sqlalchemy.Boolean)
     is_turn_player_1 = sqlalchemy.Column(sqlalchemy.Boolean)
     is_first_turn_player_1 = sqlalchemy.Column(sqlalchemy.Boolean)
+    is_room_closed = sqlalchemy.Column(sqlalchemy.Boolean, default=False)

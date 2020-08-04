@@ -8,6 +8,11 @@ from data.room import Rooms
 list_of_parameters_users = ['name', 'surname', 'age', 'id', 'is_varfarin',
                             'email', 'modified_date']
 
+
+parser_do_hit = reqparse.RequestParser()
+parser_do_hit.add_argument('rotate', required=True, type=int)
+parser_do_hit.add_argument('power', required=True, type=float)
+
 parser_join_to_room = reqparse.RequestParser()
 parser_join_to_room.add_argument('user_id', required=True, type=int)
 parser_join_to_room.add_argument('room_id', required=True, type=int)
@@ -66,7 +71,8 @@ class RoomUpdateResource(Resource):
                             'is_turn_player_1': room.is_turn_player_1,
                             'is_first_turn_player_1': room.is_first_turn_player_1,
                             'user_1': room.user_1,
-                            'user_2': room.user_2})
+                            'user_2': room.user_2,
+                            'map': room.map})
         else:
             abort(404, message=f"incorrect id_room")
 
@@ -193,3 +199,32 @@ def check_password(user_id, password):   # проверяет пароль
         return user.check_password(password)
     abort(404, message=f"User {user_id} not found")
 
+
+class RoomCreateHit(Resource):
+    def put(self, room_id):
+        args = parser_do_hit.parse_args()
+        session = db_session.create_session()
+        room = session.query(Rooms).filter(Rooms.id == room_id).first()
+        if room:
+            room.power = args['power']
+            room.rotate = args['rotate']
+            room.is_turn_ended = True
+            room.is_turn_player_1 = not room.is_turn_player_1
+            session.commit()
+            return jsonify({'success': 'OK'})
+        else:
+            abort(404, message=f"incorrect id_room")
+
+
+class RoomStartHit(Resource):
+    def put(self, room_id):
+        session = db_session.create_session()
+        room = session.query(Rooms).filter(Rooms.id == room_id).first()
+        if room:
+            room.power = 1
+            room.rotate = 0
+            room.is_turn_ended = False
+            session.commit()
+            return jsonify({'success': 'OK'})
+        else:
+            abort(404, message=f"incorrect id_room")

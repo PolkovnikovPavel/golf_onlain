@@ -10,3 +10,11 @@ def get_image(name, w, h, mode=0):
     if mode == 1:
         return ImageTk.PhotoImage(img), img
     return ImageTk.PhotoImage(img)
+
+
+def resize_image(img, w, h):
+    size = (w, h)
+    img = img.resize(size, Image.ANTIALIAS)
+
+    return ImageTk.PhotoImage(img)
+

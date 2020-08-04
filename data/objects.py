@@ -3,13 +3,17 @@ from images.images import *
 
 
 class Object():
-    def __init__(self, x, y, w, h, img, canvas, visibility=True):
+    def __init__(self, x, y, w, h, img, canvas, visibility=True, container=[], mode_coord=False):
+        self.container = container
         self.x = x
         self.y = y
         self.w = w
         self.h = h
         self.angle = 0
+        self.name_img = None
+        self.mode_coord = mode_coord
         if type(img) == str:
+            self.name_img = img
             self.img, self.img_pil = get_image(img, w, h, mode=1)
         else:
             self.img = img
@@ -18,7 +22,33 @@ class Object():
         self.canvas = canvas
         self.visibility = visibility
         if visibility:
-            self.obj = self.canvas.create_image((x + 0.5 * self.w, y + 0.5 * self.h), image=self.img)
+            if self.mode_coord:
+                self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
+            else:
+                self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+
+    def change_img(self, new_img, w, h):
+        if not self.mode_coord:
+            self.x -= (w - self.w) // 2
+            self.y -= (h - self.h) // 2
+        self.w = w
+        self.h = h
+        self.canvas.delete(self.obj)
+
+        if type(new_img) == str:
+            self.name_img = new_img
+            self.img, self.img_pil = get_image(new_img, w, h, mode=1)
+        else:
+            self.img = new_img
+            self.img_pil = None
+        self.img_pil_start = self.img_pil
+
+        if self.visibility:
+            if self.mode_coord:
+                self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
+            else:
+                self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+
 
     def go_to(self, x, y):
         dx = x - self.x
@@ -32,7 +62,18 @@ class Object():
         self.visibility = False
 
     def show(self):
-        self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+        if self.mode_coord:
+                self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
+        else:
+            self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+        self.visibility = True
+
+    def reshow(self):
+        self.canvas.delete(self.obj)
+        if self.mode_coord:
+            self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
+        else:
+            self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
         self.visibility = True
 
     def rotation_on(self, angle):
@@ -46,7 +87,10 @@ class Object():
             self.img = ImageTk.PhotoImage(self.img_pil)
 
             self.canvas.delete(self.obj)
-            self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+            if self.mode_coord:
+                self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
+            else:
+                self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
 
 
     def check_point(self, x, y):
@@ -95,14 +139,20 @@ class Button(Object):
                     self.is_clik = False
                     if self.img2 is not None:
                         self.canvas.delete(self.obj)
-                        self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+                        if self.mode_coord:
+                            self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
+                        else:
+                            self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
                     self.press()
         else:
             if self.is_clik:
                 self.is_clik = False
                 if self.img2 is not None:
                     self.canvas.delete(self.obj)
-                    self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+                    if self.mode_coord:
+                        self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
+                    else:
+                        self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
 
 
 

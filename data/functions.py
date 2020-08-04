@@ -1,5 +1,5 @@
-import time, sys, ctypes, win32api
-from pywintypes import DEVMODEType, error
+import time, sys, ctypes  #win32api
+#from pywintypes import DEVMODEType, error
 
 screen_w = 0
 screen_h = 0
@@ -18,7 +18,7 @@ def pw(percent):
 def ph(percent):
     return int(screen_h / 100 * percent)
 
-
+"""
 class ScreenRes(object):
     @classmethod
     def set(cls, width=None, height=None, depth=32):
@@ -144,3 +144,5 @@ class ScreenRes(object):
     @staticmethod
     def _osx_get_modes():
         raise NotImplementedError()
+"""
+

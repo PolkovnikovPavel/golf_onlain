@@ -32,10 +32,6 @@ main_grope.add_objects(btn)
 
 game_grope = Group()
 all_gropes.append(game_grope)
-obj = Object(0, 0, 50, 50, 'ball.png', canvas)
-game_grope.add_objects(obj)
-obj = Object(0, 0, 50, 50, 'ball.png', canvas)
-game_grope.add_objects(obj)
 game_grope.hide_all()
 
 
@@ -45,7 +41,7 @@ master.bind('<Button-1>', click)
 master.bind('<ButtonRelease-1>', clik_out)
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main_cycle(master, screen_w, screen_h, all_gropes))
+loop.run_until_complete(main_cycle(canvas, screen_w, screen_h, all_gropes))
 
 
 

@@ -69,6 +69,8 @@ def main():
     api.add_resource(db_resource.RoomUpdateResource, '/api/update_room/<int:room_id>')
     api.add_resource(db_resource.RoomMoveResource,
                      '/api/update_room/<int:room_id>/<int:x>/<int:y>/<int:is_1_player>')
+    api.add_resource(db_resource.RoomStartHit, '/api/start_hit/<int:room_id>')
+    api.add_resource(db_resource.RoomCreateHit, '/api/create_hit/<int:room_id>')
 
 
 
