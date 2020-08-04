@@ -84,7 +84,7 @@ def game_cycle(*args):
         hole, grass, walls, coords = get_map(my_room['map'], canvas)
         x_1, y_1, x_2, y_2 = coords
     else:
-        map = 0
+        map = 1
         hole, grass, walls, coords = get_map(map, canvas)
         walls.hide_all()
         grass.hide_all()
@@ -130,26 +130,33 @@ def game_cycle(*args):
     player_1 = Object(x_1, y_1, 25, 25, 'blue_ball.png', canvas)
     player_2 = Object(x_2, y_2, 25, 25, 'red_ball.png', canvas)
 
+    if is_1_player:
+        name_1 = Text(100, 30, 'Я', canvas)
+        name_2 = Text(1100, 30, 'Соперник', canvas)
+    else:
+        name_1 = Text(100, 30, 'Соперник', canvas)
+        name_2 = Text(1100, 30, 'Я', canvas)
+
     timer = time.time()
     while running:
         type_menu = 'game'
         my_room = get(f'{url}/api/update_room/{room_id}').json()
         if my_room['is_turn_player_1']:
             if is_1_player:
-                choice_of_direction(canvas, (player_1, player_2), is_1_player)
+                choice_of_direction(canvas, (player_1, player_2), is_1_player, (name_1, name_2))
                 my_room = get(f'{url}/api/update_room/{room_id}').json()
                 to_hit(canvas, my_room['rotate'], my_room['power'], player_1)
             else:
-                expectation(canvas, is_1_player, player_1, player_2)
+                expectation(canvas, is_1_player, player_1, player_2, (name_1, name_2))
                 my_room = get(f'{url}/api/update_room/{room_id}').json()
                 to_hit(canvas, my_room['rotate'], my_room['power'], player_1)
         else:
             if not is_1_player:
-                choice_of_direction(canvas, (player_1, player_2), is_1_player)
+                choice_of_direction(canvas, (player_1, player_2), is_1_player, (name_1, name_2))
                 my_room = get(f'{url}/api/update_room/{room_id}').json()
                 to_hit(canvas, my_room['rotate'], my_room['power'], player_2)
             else:
-                expectation(canvas, is_1_player, player_1, player_2)
+                expectation(canvas, is_1_player, player_1, player_2, (name_1, name_2))
                 my_room = get(f'{url}/api/update_room/{room_id}').json()
                 to_hit(canvas, my_room['rotate'], my_room['power'], player_2)
 
@@ -163,7 +170,7 @@ def game_cycle(*args):
 
 
 
-def expectation(canvas, is_1_player, player_1, player_2):
+def expectation(canvas, is_1_player, player_1, player_2, names):
     if is_1_player:
         bg_left = Object(0, 0, 200, 800, 'blue_pale.png', canvas)
         bg_right = Object(1000, 0, 200, 800, 'red.png', canvas)
@@ -171,8 +178,11 @@ def expectation(canvas, is_1_player, player_1, player_2):
         bg_left = Object(0, 0, 200, 800, 'blue.png', canvas)
         bg_right = Object(1000, 0, 200, 800, 'red_pale.png', canvas)
 
+    name_1, name_2 = names
     player_1.reshow()
     player_2.reshow()
+    name_1.reshow()
+    name_2.reshow()
     time.sleep(0.2)
     while running:
         my_room = get(f'{url}/api/update_room/{room_id}').json()
@@ -186,7 +196,7 @@ def expectation(canvas, is_1_player, player_1, player_2):
         canvas.update()
 
 
-def choice_of_direction(canvas, players, is_1_player):
+def choice_of_direction(canvas, players, is_1_player, names):
     global type_menu, is_ended, pointer
     player_1, player_2 = players
     type_menu = 'game_1'
@@ -200,8 +210,12 @@ def choice_of_direction(canvas, players, is_1_player):
         bg_left = Object(0, 0, 200, 800, 'blue_pale.png', canvas)
         bg_right = Object(1000, 0, 200, 800, 'red.png', canvas)
 
+    name_1, name_2 = names
     player_1.reshow()
     player_2.reshow()
+    name_1.reshow()
+    name_2.reshow()
+
     rez = put(f'{url}/api/start_hit/{room_id}').json()
     tap_1 = Object(0, 0, 40, 40, 'grey_circle.png', canvas, False, mode_coord=True)
     tap_2 = Object(0, 0, 40, 40, 'grey_circle.png', canvas, False, mode_coord=True)
@@ -237,9 +251,9 @@ def choice_of_direction(canvas, players, is_1_player):
                     else:
                         rotate = math.atan((old_mous_y - mous_y) / (old_mous_x - mous_x)) * 180 / math.pi
                         rotate = rotate * -1 - 90
-
                 except Exception:
                     pass
+
                 canvas.delete(pointer_mous_2)
                 pointer_mous_2 = canvas.create_oval(old_mous_x - power, old_mous_y - power, old_mous_x + power, old_mous_y + power, outline="gray", width=3)
 

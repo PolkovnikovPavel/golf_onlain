@@ -22,10 +22,14 @@ class Object():
         self.canvas = canvas
         self.visibility = visibility
         if visibility:
-            if self.mode_coord:
-                self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
-            else:
-                self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+            self.create_obj()
+
+    def create_obj(self):
+        if self.mode_coord:
+            self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
+        else:
+            self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+
 
     def change_img(self, new_img, w, h):
         if not self.mode_coord:
@@ -33,7 +37,10 @@ class Object():
             self.y -= (h - self.h) // 2
         self.w = w
         self.h = h
-        self.canvas.delete(self.obj)
+        try:
+            self.canvas.delete(self.obj)
+        except Exception:
+            pass
 
         if type(new_img) == str:
             self.name_img = new_img
@@ -44,11 +51,7 @@ class Object():
         self.img_pil_start = self.img_pil
 
         if self.visibility:
-            if self.mode_coord:
-                self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
-            else:
-                self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
-
+            self.create_obj()
 
     def go_to(self, x, y):
         dx = x - self.x
@@ -62,18 +65,12 @@ class Object():
         self.visibility = False
 
     def show(self):
-        if self.mode_coord:
-                self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
-        else:
-            self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+        self.create_obj()
         self.visibility = True
 
     def reshow(self):
         self.canvas.delete(self.obj)
-        if self.mode_coord:
-            self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
-        else:
-            self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+        self.create_obj()
         self.visibility = True
 
     def rotation_on(self, angle):
@@ -87,11 +84,7 @@ class Object():
             self.img = ImageTk.PhotoImage(self.img_pil)
 
             self.canvas.delete(self.obj)
-            if self.mode_coord:
-                self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
-            else:
-                self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
-
+            self.create_obj()
 
     def check_point(self, x, y):
         if x >= self.x and x <= self.x + self.w and y >= self.y and y <= self.y + self.h:
@@ -139,20 +132,49 @@ class Button(Object):
                     self.is_clik = False
                     if self.img2 is not None:
                         self.canvas.delete(self.obj)
-                        if self.mode_coord:
-                            self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
-                        else:
-                            self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+                        self.create_obj()
                     self.press()
         else:
             if self.is_clik:
                 self.is_clik = False
                 if self.img2 is not None:
                     self.canvas.delete(self.obj)
-                    if self.mode_coord:
-                        self.obj = self.canvas.create_image((self.x, self.y), image=self.img)
-                    else:
-                        self.obj = self.canvas.create_image((self.x + 0.5 * self.w, self.y + 0.5 * self.h), image=self.img)
+                    self.create_obj()
+
+
+class Text():
+    def __init__(self, x, y, text, canvas, font='Times 25 italic bold', visibility=True):
+        self.x = x
+        self.y = y
+        self.visibility = visibility
+        self.text = text
+        self.canvas = canvas
+        self.font = font
+        if self.visibility:
+            self.create_obj()
+        else:
+            self.obj = None
+
+    def create_obj(self):
+        self.obj = self.canvas.create_text(self.x, self.y, font=self.font, text=self.text)
+
+    def hide(self):
+        self.canvas.delete(self.obj)
+        self.visibility = False
+
+    def show(self):
+        self.create_obj()
+        self.visibility = True
+
+    def reshow(self):
+        self.canvas.delete(self.obj)
+        self.create_obj()
+        self.visibility = True
+
+    def set_new_text(self, text):
+        self.text = text
+        if self.visibility:
+            self.create_obj()
 
 
 
