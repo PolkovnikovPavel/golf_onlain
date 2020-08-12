@@ -4,7 +4,7 @@ from data.objects import *
 from data.functions import pw, ph
 from data.maps import *
 
-url = 'http://192.168.0.22:5000'
+url = 'http://192.168.0.16:5000'
 type_menu = 'main'
 mous_x = 0
 mous_y = 0
@@ -47,7 +47,7 @@ def clik_out(event, *args):
 
 
 
-async def main_cycle(canvas_, screen_w, screen_h, all_gropes_):
+def main_cycle(canvas_, all_gropes_):
     global canvas, running, all_gropes, my_id, type_menu
     canvas = canvas_
     all_gropes = all_gropes_
@@ -72,7 +72,7 @@ async def main_cycle(canvas_, screen_w, screen_h, all_gropes_):
 
 
 def game_cycle(*args):
-    global type_menu, room_id, is_1_player
+    global type_menu, room_id, is_1_player, hole, grass, walls, all_map, player_1, player_2
     type_menu = 'game'
     main_grope, game_grope = all_gropes
 
@@ -81,11 +81,11 @@ def game_cycle(*args):
         is_1_player = False
         print(put(f'{url}/api/create_room', json={'user_id': my_id, 'room_id': room_id}).json())
         my_room = get(f'{url}/api/update_room/{room_id}').json()
-        hole, grass, walls, coords = get_map(my_room['map'], canvas)
+        hole, grass, walls, coords, all_map = get_map(my_room['map'], canvas)
         x_1, y_1, x_2, y_2 = coords
     else:
-        map = 1
-        hole, grass, walls, coords = get_map(map, canvas)
+        map = 0
+        hole, grass, walls, coords, all_map = get_map(map, canvas)
         walls.hide_all()
         grass.hide_all()
         hole.hide()
@@ -120,15 +120,15 @@ def game_cycle(*args):
         text.hide()
         loading.hide()
 
-    walls.show_all()
     grass.show_all()
+    walls.show_all()
     hole.show()
 
     game_grope.show_all()
     main_grope.hide_all()
 
-    player_1 = Object(x_1, y_1, 25, 25, 'blue_ball.png', canvas)
-    player_2 = Object(x_2, y_2, 25, 25, 'red_ball.png', canvas)
+    player_1 = Object(x_1, y_1, 25, 25, 'blue_ball.png', canvas, mode_coord=True)
+    player_2 = Object(x_2, y_2, 25, 25, 'red_ball.png', canvas, mode_coord=True)
 
     if is_1_player:
         name_1 = Text(100, 30, 'Я', canvas)
@@ -169,7 +169,6 @@ def game_cycle(*args):
         timer = time.time()
 
 
-
 def expectation(canvas, is_1_player, player_1, player_2, names):
     if is_1_player:
         bg_left = Object(0, 0, 200, 800, 'blue_pale.png', canvas)
@@ -202,11 +201,11 @@ def choice_of_direction(canvas, players, is_1_player, names):
     type_menu = 'game_1'
     is_ended = False
     if is_1_player:
-        pointer = Object(player_1.x + 12, player_1.y + 12, 150, 150, 'painter.png', canvas, False, mode_coord=True)
+        pointer = Object(player_1.x, player_1.y, 150, 150, 'painter.png', canvas, False, mode_coord=True)
         bg_left = Object(0, 0, 200, 800, 'blue.png', canvas)
         bg_right = Object(1000, 0, 200, 800, 'red_pale.png', canvas)
     else:
-        pointer = Object(player_2.x + 12, player_2.y + 12, 150, 150, 'painter.png', canvas, False, mode_coord=True)
+        pointer = Object(player_2.x, player_2.y, 150, 150, 'painter.png', canvas, False, mode_coord=True)
         bg_left = Object(0, 0, 200, 800, 'blue_pale.png', canvas)
         bg_right = Object(1000, 0, 200, 800, 'red.png', canvas)
 
@@ -234,6 +233,8 @@ def choice_of_direction(canvas, players, is_1_player, names):
             tap_2.go_to(mous_x, mous_y)
             power = int((abs(old_mous_x - mous_x) ** 2 + abs(old_mous_y - mous_y) ** 2) ** 0.5)
 
+            print(rotate)
+
             if power >= 175:
                 power = 174
 
@@ -242,10 +243,10 @@ def choice_of_direction(canvas, players, is_1_player, names):
                     if old_mous_y - mous_y >= 0 and old_mous_x - mous_x >= 0:
                         rotate = math.atan((old_mous_y - mous_y) / (old_mous_x - mous_x)) * 180 / math.pi
                         rotate = rotate * -1 - 90
-                    elif old_mous_y - mous_y > 0 and old_mous_x - mous_x < 0:
+                    elif old_mous_y - mous_y >= 0 and old_mous_x - mous_x < 0:
                         rotate = math.atan((old_mous_y - mous_y) / (old_mous_x - mous_x)) * 180 / math.pi
                         rotate = rotate * -1 + 90
-                    elif old_mous_y - mous_y < 0 and old_mous_x - mous_x < 0:
+                    elif old_mous_y - mous_y <= 0 and old_mous_x - mous_x < 0:
                         rotate = math.atan((old_mous_y - mous_y) / (old_mous_x - mous_x)) * 180 / math.pi
                         rotate = rotate * -1 + 90
                     else:
@@ -285,13 +286,62 @@ def choice_of_direction(canvas, players, is_1_player, names):
 def to_hit(canvas, rotate, power, moving_player):
     speed = power * 25
 
+    # hole, grass, walls
     while speed > 1 and running:
-        d_x  = math.sin(rotate * (math.pi / 180)) * speed
-        d_y = math.cos(rotate * (math.pi / 180)) * speed
-        moving_player.go_to(moving_player.x + d_x, moving_player.y + d_y)
-        speed -= 1
-        time.sleep(0.04)
+        player_x = moving_player.x
+        player_y = moving_player.y
+        speed_ = speed / speed
+        for _ in range(int(speed)):
+            d_x = math.sin(rotate * (math.pi / 180)) * speed_
+            d_y = math.cos(rotate * (math.pi / 180)) * speed_
+            player_x += d_x
+            player_y += d_y
+
+            if hole.check_point(player_x, player_y):
+                wright_winner(canvas, moving_player, hole, grass, walls)
+
+            for object in walls.all_objects:
+                if object.check_point(player_x, player_y):
+                    rotate = object.get_rotation(rotate)
+                    print('rotate:', rotate)
+                    print('-----')
+
+                    j = 0
+                    while object.check_point(player_x, player_y, 5):
+                        j += 1
+                        d_x = math.sin(rotate * (math.pi / 180)) * speed_
+                        d_y = math.cos(rotate * (math.pi / 180)) * speed_
+                        player_x += d_x
+                        player_y += d_y
+                        if j % 2 == 0:
+                            moving_player.go_to(int(player_x), int(player_y))
+                            canvas.update()
+
+
+        moving_player.go_to(int(player_x), int(player_y))
+        call = all_map.get_call(int(player_x), int(player_y))
+        if call:
+            speed += call.d_speed
+        time.sleep(0.0366)
         canvas.update()
 
+
+def wright_winner(canvas, moving_player, hole, grass, walls):
+    global type_menu
+
+    if moving_player is player_1:
+        text = Text(550, 300, 'Победил синий!', canvas)
+    else:
+        text = Text(550, 300, 'Победил красный!', canvas)
+
+    hole.hide()
+    grass.hide_all()
+    walls.hide_all()
+
+    type_menu = 'wright_winner'
+    while running:
+        canvas.update()
+        if is_click:
+            text.hide()
 
 

@@ -177,7 +177,6 @@ class Text():
             self.create_obj()
 
 
-
 class Group():
     def __init__(self):
         self.all_objects = []
@@ -216,3 +215,46 @@ class Group():
                 if isinstance(object, Button):
                     object.check(x, y, is_clik)
 
+
+class Call(Object):
+    def __init__(self, x, y, size, data, canvas):
+        name = 'grass_1.png'
+        self.d_speed = -2
+        if data[0] == 1:
+            name = 'grass_2.png'
+            self.d_speed = -10
+        Object.__init__(self, x, y, size, size, name, canvas, visibility=True)
+        self.size = size
+        self.data = data
+
+
+
+class Field():
+    def __init__(self, x, y, width, hide, size, canvas, name_file):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.hide = hide
+        self.size = size
+        self.name_file = name_file
+        self.group = Group()
+
+        self.field = []
+
+        for i in range(hide):
+            self.field.append([])
+            for j in range(width):
+                call = Call(j * self.size + x, i * self.size + y, self.size, [1], canvas)
+                self.group.add_objects(call)
+                self.field[-1].append(call)
+
+        self.player_1_x = 250
+        self.player_1_y = 500
+        self.player_2_x = 275
+        self.player_2_y = 500
+
+    def get_call(self, x, y):
+        x -= self.x
+        y -= self.y
+        if x >= 0 and x <= self.width * self.size and y >= 0 and y <= self.hide * self.size:
+            return self.field[y // self.size][x // self.size]

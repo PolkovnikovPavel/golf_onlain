@@ -16,7 +16,7 @@ class Rooms(SqlAlchemyBase, SerializerMixin):
     y_2 = sqlalchemy.Column(sqlalchemy.Integer)
     map = sqlalchemy.Column(sqlalchemy.Integer)
 
-    rotate = sqlalchemy.Column(sqlalchemy.Integer)
+    rotate = sqlalchemy.Column(sqlalchemy.Float)
     power = sqlalchemy.Column(sqlalchemy.Float)
 
     is_turn_ended = sqlalchemy.Column(sqlalchemy.Boolean)

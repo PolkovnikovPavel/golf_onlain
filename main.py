@@ -40,8 +40,9 @@ master.bind('<Motion>', move)
 master.bind('<Button-1>', click)
 master.bind('<ButtonRelease-1>', clik_out)
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main_cycle(canvas, screen_w, screen_h, all_gropes))
+main_cycle(canvas, all_gropes)
+
+
 
 
 

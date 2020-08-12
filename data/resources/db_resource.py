@@ -10,7 +10,7 @@ list_of_parameters_users = ['name', 'surname', 'age', 'id', 'is_varfarin',
 
 
 parser_do_hit = reqparse.RequestParser()
-parser_do_hit.add_argument('rotate', required=True, type=int)
+parser_do_hit.add_argument('rotate', required=True, type=float)
 parser_do_hit.add_argument('power', required=True, type=float)
 
 parser_join_to_room = reqparse.RequestParser()

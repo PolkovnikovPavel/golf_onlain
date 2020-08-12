@@ -11,6 +11,16 @@ def teak_w_and_h(w, h):
     screen_h = h
 
 
+def get_norm_rotate(rotate):
+    rotate = rotate % 360
+    if rotate > 180:
+        rotate = -180 + (rotate - 180)
+    elif rotate < -180:
+        rotate = 360 + rotate
+    print('correction done')
+    return rotate
+
+
 def pw(percent):
     return int(screen_w / 100 * percent)
 
