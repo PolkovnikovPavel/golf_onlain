@@ -1,5 +1,3 @@
-sdpfin = true;
-
     send = (data) => {
         try {
             client[Object.keys(client)[0]].send(JSON.stringify(data));
