@@ -24,7 +24,7 @@ Pygments==2.4.2
 
 pytoml==0.1.21
 pytz==2019.3
-requests==2.22.0
+requests==2.32.2
 schedule==0.6.0
 shiboken2==5.13.0
 sip==4.19.8
